@@ -3,6 +3,8 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+#define NOT_FOUND_IN_TABLE -1
+
 
 /* Определяем элемент списка */
 typedef struct list_node {
@@ -12,16 +14,16 @@ typedef struct list_node {
 
 /* Определяем сам список */
 typedef struct list {
-    /*
-     * Размер списка хранить не обязательно,
-     * он нужен для упрощения работы
-     */
     int size;
-    /* начало списка */
     list_node_t *head;
-    /* конец списка */
     list_node_t *tail;
 } list_t;
+
+
+typedef struct Hash_Table {
+    list_t **list;
+    unsigned int size;
+} Hash_Table;
 
 /* Инициализация массива */
 list_t *create_list(void) {
@@ -34,41 +36,7 @@ list_t *create_list(void) {
     return lt;
 }
 
-/* Добавляем элемент в начало списка */
-void list_push(list_t *lt, void *data) {
-    list_node_t *node = malloc(sizeof(list_node_t));
-    node->data = data;
-    node->next = lt->head;
-
-    lt->head = node;
-    lt->size += 1;
-}
-
-/* Извлекаем элемент из начала списка */
-void *list_pop(list_t *lt) {
-    if (lt->size == 0) {
-        /* Список пуст */
-        return NULL;
-    }
-
-    list_node_t *node = lt->head;
-    void *ret_val = node->data;
-
-    lt->size -= 1;
-    lt->head = node->next;
-
-    free(node);
-
-    if (lt->size == 0) {
-        /* Это был последний элемент */
-        lt->head = NULL;
-        lt->tail = NULL;
-    }
-
-    return ret_val;
-}
-
-bool ifIn(list_t *lt, const char *data) {
+bool is_el_in_list(list_t *lt, const char *data) {
     list_node_t *node = lt->head;
     while (node != NULL) {
         if (node->data == data) {
@@ -136,7 +104,7 @@ unsigned int WordCombination(const char *str) {
     return result;
 }
 
-unsigned int hash(const char *str, const int tableSize) {
+unsigned int hash(const char *str, const unsigned int tableSize) {
     int A = 7;
     int w = 11;
     int m = 1;
@@ -146,18 +114,61 @@ unsigned int hash(const char *str, const int tableSize) {
 }
 
 
+Hash_Table generate_hash_table(int size) {
+    list_t **list = malloc(sizeof(list_t) * size);
+    for (int i = 0; i < size; i++) {
+        list[i] = create_list();
+    }
+    Hash_Table table;
+    table.list = list;
+    table.size = size;
+    return table;
+}
+
+void print_hash_table(Hash_Table table) {
+    for (unsigned int i = 0; i < table.size; i++) {
+        printf("%s", "index № ");
+        printf("%d", i);
+        printf(": ");
+        print_list(table.list[i]);
+    }
+}
+
+void pushEl(Hash_Table table, const char *el) {
+    unsigned index = hash(el, table.size);
+    list_push_back(table.list[index], el);
+}
+
+int searchEl(Hash_Table table, const char *searching_el) {
+    int index = (int) hash(searching_el, table.size);
+    if (is_el_in_list(table.list[index], searching_el)) {
+        return index;
+    }
+    return NOT_FOUND_IN_TABLE;
+}
+
 int main() {
+    int size = 3;
+    Hash_Table hashTable = generate_hash_table(size);
+    char keys[13][100] = {
+            "START",
+            "END",
+            "BYTE",
+            "WORD",
+            "RESB",
+            "RESW",
+            "ADD",
+            "CMP",
+            "GG",
+            "PP",
+            "LL",
+            "SS",
+            "HH"
+    };
 
+    for(size_t c = 0; c < 13; ++c){
+        pushEl(hashTable,keys[c]);
+    }
 
-    list_t *queue = create_list();
-    char *data = "kek";
-    char *data2 = "lol";
-    int data3 = 7;
-
-    list_push_back(queue, data);
-    list_push_back(queue, data2);
-    bool res = ifIn(queue, "kek");
-
-    print_list(queue);
-    printf("%d", res);
+    print_hash_table(hashTable);
 }
