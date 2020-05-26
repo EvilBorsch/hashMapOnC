@@ -4,11 +4,10 @@
 #include <stdlib.h>
 
 
-
 /* Определяем элемент списка */
 typedef struct list_node {
     struct list_node *next;
-    int *data;
+    char *data;
 } list_node_t;
 
 /* Определяем сам список */
@@ -69,7 +68,7 @@ void *list_pop(list_t *lt) {
     return ret_val;
 }
 
-bool ifIn(list_t *lt, const int *data) {
+bool ifIn(list_t *lt, const char *data) {
     list_node_t *node = lt->head;
     while (node != NULL) {
         if (node->data == data) {
@@ -83,10 +82,10 @@ bool ifIn(list_t *lt, const int *data) {
 void print_list(list_t *lt) {
     list_node_t *node = lt->head;
     while (node != NULL) {
-        printf("%d", *node->data);
+        printf("%s", node->data);
 
         node = node->next;
-        if (node!=NULL){
+        if (node != NULL) {
             printf("%s", " -> ");
         }
     }
@@ -151,12 +150,14 @@ int main() {
 
 
     list_t *queue = create_list();
-    int data = 5;
-    int data2 = 6;
+    char *data = "kek";
+    char *data2 = "lol";
     int data3 = 7;
 
-    list_push_back(queue, &data);
-    list_push_back(queue, &data2);
+    list_push_back(queue, data);
+    list_push_back(queue, data2);
+    bool res = ifIn(queue, "kek");
 
     print_list(queue);
+    printf("%d", res);
 }
